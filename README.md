@@ -127,6 +127,7 @@ terraform output
 
 The following output variables are exposed from terraform at the end of the deployment:
 
+
 | Output Variable | Description |
 --- | ---| 
 |AzureFrontDoorName | This is the name of the FrontDoor in Azure. It's a random name.
@@ -142,6 +143,9 @@ The following output variables are exposed from terraform at the end of the depl
 |Webserver_WEU | FQDN of webserver in WEU
 |azurerm_storage_account_web_endpoint | "https://seae21ef0a54b2bf70e.z23.web.core.windows.net/"
 |azurerm_storage_account_web_host | "seae21ef0a54b2bf70e.z23.web.core.windows.net"
+
+
+* I've decided to put the VM password in the console output, in a lab, this is quite convenient. Please keep in mind to NOT DO THIS IN PRODUCTION ! Also, since Terraform 0.15, these output will be omitted as insecure, but I decided to use the nonsensitive()-function to override the warning.
 
 ## Configure diagnostic settings
 Later in this Microhack, you'll take a deeper look into monitoring your FrontDoor instance and eg. check backend availability. So you need to configure diagnostic settings accordingly.

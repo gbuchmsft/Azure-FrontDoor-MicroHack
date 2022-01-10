@@ -287,7 +287,7 @@ resource "azurerm_lb_rule" "web" {
   backend_port                   = 80
   frontend_ip_configuration_name = "FrontEndPrivIP"
   probe_id                       = azurerm_lb_probe.web.id
-  backend_address_pool_id        = azurerm_lb_backend_address_pool.http-pool.id
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.http-pool.id]
 }
 
 

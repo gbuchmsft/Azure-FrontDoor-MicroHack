@@ -27,7 +27,7 @@ output "VM-Webserver-SEA" {
 }
 
 output "Virtual_Machine-USC-PW" {
-    value = azurerm_key_vault_secret.vmpassword.value
+    value = nonsensitive(azurerm_key_vault_secret.vmpassword.value)
 }
 
 
