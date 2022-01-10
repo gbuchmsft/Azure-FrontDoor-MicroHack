@@ -25,27 +25,28 @@
 [Closing : Clean up resources](#closing--clean-up-resources)
 
 **Work in progress / coming soon:**
-*Module x : Monitoring Azure FrontDoor*
-*Module x : Azure FrontDoor Premium*
-*Module x : Accessing FrontDoor via IPv6*
-*Module x : Test failover of backend member*
-*Additional information*
+
+*Module x : Monitoring Azure FrontDoor*  
+*Module x : Azure FrontDoor Premium*  
+*Module x : Accessing FrontDoor via IPv6*  
+*Module x : Test failover of backend member*  
+*Additional information*  
 *Adopt the environment to your needs*
 
 ---
 
 
 ## About Microhacks
-Microhacks are a great way to explore a certain topic in a short amount of time. They're purpose build and helps you to get a basic understanding of a service without overwhelming you with the complexity of the documentation. Instead you're going to use a pre-build environment and use this to learn and gather your own findings.
+Microhacks are a great way to explore a certain topic in a short amount of time. They're purpose build and help you to get a basic understanding of a service without overwhelming you with the complexity of the documentation. Instead you're going to use a pre-build environment to learn and gather your own findings.
 This pre-build environment is also useful if you want to test something or need to build a lab environment.
 
 Besides this Microhack, there are a couple of others available:
 
-- Azure virtual WAN https://github.com/mddazure/azure-vwan-microhack
+- Azure Virtual WAN https://github.com/mddazure/azure-vwan-microhack
 - Azure Private Link https://github.com/adstuart/azure-privatelink-dns-microhack
 
 ## Overview
-In this Microhack you're going to learn about the different options in Azure FrontDoor and how it can help to deliver high available and securel Applications to the Internet.
+In this Microhack you're going to learn about the different options in Azure FrontDoor and how it can help to deliver high available and secure Applications to the Internet.
 Beginning with a Standard FrontDoor instance, you're going to learn about the different backend options, explore request routing in Azure FD and see the rules engine in action.
 
 Moving on, you'll create an Azure FrontDoor Premium and deploy a backend connected via private link (this feature ist still in preview but quite interesting for many scenarios).
@@ -85,7 +86,7 @@ For now, I'm going to assume that you'll be using [Azure Cloud Shell](https://do
 
 - Log in to Azure Cloud Shell at https://shell.azure.com/ and select Bash
   
-- Ensure Azure CLI and extensions are up to date:
+- (on your local environemnt) Ensure Azure CLI and extensions are up to date:
     ```console
   az upgrade --yes
   ```  
@@ -100,12 +101,12 @@ For now, I'm going to assume that you'll be using [Azure Cloud Shell](https://do
   
 - Clone this github repository. Go to the local directory where the github repo shall be cloned to and issue:
   ```console
-  git clone https://github.com/gbuch/azure-frontdoor-microhack
+  git clone https://github.com/gbuchmsft/Azure-FrontDoor-MicroHack.git
   ```
 
 - Change directory:
   ```console
-  cd ./azure-frontdoor-microhack
+  cd ./Azure-FrontDoor-MicroHack
   ```
 
 - Initialize terraform and download the azurerm resource provider:
@@ -126,19 +127,21 @@ terraform output
 
 The following output variables are exposed from terraform at the end of the deployment:
 
-AzureFrontDoorName = This is the name of the FrontDoor in Azure. It's a random name.
-AzureFrontDoorNameCNAME = This is the URL of the FrontDoor.
-AzureVM-WEU-fqdn = "cltweu-9033.westeurope.cloudapp.azure.com"
-VM-Webserver-SEA = IP-Address of Webserver SEA
-Virtual_Machine-SEA = IP-Address of Client-VM in SEA
-Virtual_Machine-USC = IP-Address of Client-VM in USC
-Virtual_Machine-USC-PW = Password for all Virtual Machines
-Virtual_Machine-WEU = IP-Address of Client-VM in WEU
-Webserver_SEA = FQDN of webserver in SEA
-Webserver_USC = FQDN of webserver in USC
-Webserver_WEU = FQDN of webserver in WEU
-azurerm_storage_account_web_endpoint = "https://seae21ef0a54b2bf70e.z23.web.core.windows.net/"
-azurerm_storage_account_web_host = "seae21ef0a54b2bf70e.z23.web.core.windows.net"
+| Output Variable | Description |
+--- | ---| 
+|AzureFrontDoorName | This is the name of the FrontDoor in Azure. It's a random name.
+|AzureFrontDoorNameCNAME | This is the URL of the FrontDoor.
+|AzureVM-WEU-fqdn | "cltweu-9033.westeurope.cloudapp.azure.com"
+|VM-Webserver-SEA | IP-Address of Webserver SEA
+|Virtual_Machine-SEA | IP-Address of Client-VM in SEA
+|Virtual_Machine-USC | IP-Address of Client-VM in USC
+|Virtual_Machine-USC-PW | Password for all Virtual Machines
+|Virtual_Machine-WEU | IP-Address of Client-VM in WEU
+|Webserver_SEA | FQDN of webserver in SEA
+|Webserver_USC | FQDN of webserver in USC
+|Webserver_WEU | FQDN of webserver in WEU
+|azurerm_storage_account_web_endpoint | "https://seae21ef0a54b2bf70e.z23.web.core.windows.net/"
+|azurerm_storage_account_web_host | "seae21ef0a54b2bf70e.z23.web.core.windows.net"
 
 ## Configure diagnostic settings
 Later in this Microhack, you'll take a deeper look into monitoring your FrontDoor instance and eg. check backend availability. So you need to configure diagnostic settings accordingly.
