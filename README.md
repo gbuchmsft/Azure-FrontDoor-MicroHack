@@ -12,7 +12,7 @@
 
 [Configure diagnostic settings](#configure-diagnostic-settings)
 
-[Configure TLS encryption on Webserver](#configure-tls-encryption-on-webserver)
+[About Let's Encrypt](#about-lets-encrypt)
 
 [Module 0 : Check the environment](#module-0--check-the-environment)
 
@@ -158,7 +158,7 @@ After hitting "edit setting", you change the diagnostic settings according to th
 
 Now, the data will be injected into Log Analytics for further analysis.
 
-## Let's encrypt
+## About Let's encrypt
 
 :exclamation: A note on using Let's encrypt certificates
 
