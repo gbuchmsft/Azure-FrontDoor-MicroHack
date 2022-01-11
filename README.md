@@ -10,8 +10,6 @@
 
 [Create Environment](#create-environment)
 
-[Configure diagnostic settings](#configure-diagnostic-settings)
-
 [Configure TLS encryption on Webserver](#configure-tls-encryption-on-webserver)
 
 [Module 0 : Check the environment](#module-0--check-the-environment)
