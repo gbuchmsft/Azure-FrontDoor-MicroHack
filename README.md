@@ -158,30 +158,7 @@ After hitting "edit setting", you change the diagnostic settings according to th
 
 Now, the data will be injected into Log Analytics for further analysis.
 
-## Configure TLS encryption on Webserver
-
-In this task, you're going to create a public TLS Certificates using Let's Encrypt certificates.
-The public certificates are needed because Azure FrontDoor will only communicate with backend pool members that have a valid TSL certificate.
-You're allowed to login to the VMs that host the NGINX Webservers via SSH (the IP from the client you used for deployment is allowed in the NSG for SSH. Caution: If you used CloudShell for deployment, you need to add your public IP, from where you want to SSH in, to the NSG).
-Please open a console and connect to the VM:
-
-```console
-ssh mhackadmin@FQDN-OF-WEBSERVER
-```
-Use the PW shown in the terraform deployment output.
-
-First you need to uncomment "server_names_hash_bucket_size" in the /etc/nginx/nginx.conf file and increase the value from 64 to 128.
-
-After you've edited the file, you need to restart nginx : 
-```console
-sudo nginx -s reload
-```
-
-Next you're going to create a Let's encrypt certificate to enable TLS on the webserver.
-
-```console
-sudo certbot --nginx -d FQDN-OF-WEBSERVER --register-unsafely-without-email --agree-tos --no-redirect
-```
+## Let's encrypt
 
 :exclamation: A note on using Let's encrypt certificates
 
