@@ -10,5 +10,4 @@ runcmd:
   - sed /server_names_hash_bucket_size/s/64/128/g /etc/nginx/nginx.conf -i
   - sed /server_names_hash_bucket_size/s/\#//g /etc/nginx/nginx.conf -i
   - nginx -s reload
-  - curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-02-01&format=text" | base64 -d > /home/azureuser/TESTFILE.txt
   - certbot --nginx -d $(curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-02-01&format=text" | base64 -d) --register-unsafely-without-email --agree-tos --no-redirect
