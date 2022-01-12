@@ -109,10 +109,21 @@ resource "azurerm_frontdoor" "frontdoorstd" {
   }
 }
 
+# Log Analytice Workspace to ingest Log used during MicroHack
+resource "azurerm_log_analytics_workspace" "loganalytics" {
+  name                = "log${random_id.randomIdFDStd.hex}"
+  location            = azurerm_resource_group.frontdoor.location
+  resource_group_name = azurerm_resource_group.frontdoor.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+
 resource "azurerm_monitor_diagnostic_setting" "EnableDiagnostics" {
-  name               = "EnableDiagnostics"
-  target_resource_id = azurerm_frontdoor.frontdoorstd.id
-  storage_account_id = azurerm_storage_account.storageweu.id
+  name                        = "EnableDiagnostics"
+  target_resource_id          = azurerm_frontdoor.frontdoorstd.id
+  storage_account_id          = azurerm_storage_account.storageweu.id
+  log_analytics_workspace_id  = azurerm_log_analytics_workspace.loganalytics.id
 
   log {
     category = "FrontdoorAccessLog"
