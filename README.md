@@ -10,8 +10,6 @@
 
 [Create Environment](#create-environment)
 
-[Configure diagnostic settings](#configure-diagnostic-settings)
-
 [About Let's Encrypt](#about-lets-encrypt)
 
 [Module 0 : Check the environment](#module-0--check-the-environment)
@@ -141,22 +139,6 @@ azurerm_storage_account_web_endpoint = "https://seae21ef0a54b2bf70e.z23.web.core
 azurerm_storage_account_web_host = "seae21ef0a54b2bf70e.z23.web.core.windows.net"
 
 * I've decided to put the VM password in the console output, in a lab, this is quite convenient. Please keep in mind to NOT DO THIS IN PRODUCTION ! Also, since Terraform 0.15, these output will be omitted as insecure, but I decided to use the nonsensitive()-function to override the warning.
-
-## Configure diagnostic settings
-Later in this Microhack, you'll take a deeper look into monitoring your FrontDoor instance and eg. check backend availability. So you need to configure diagnostic settings accordingly.
-
-Although this can also be done via terraform, there's a risk of using a "wrong" log analytics workspace. So decision was to configure it manually.
-
-To start feeding data into the log analytics workspace, go to the FrontDoor resource created in the Resource-Group "FD-Microhack-Frontdoor" (unless you changed it in the variables.tf) and open the "Diagnostic settings".
-
-
-<img src="resources/Diagnostic%20settings.png" width=800>
-
-After hitting "edit setting", you change the diagnostic settings according to this:
-
-<img src="resources/DiagnosticSettings2.png" width=800>
-
-Now, the data will be injected into Log Analytics for further analysis.
 
 ## About Let's encrypt
 
