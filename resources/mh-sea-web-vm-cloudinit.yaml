@@ -2,12 +2,41 @@
 package_upgrade: true
 packages:
   - nginx
-  - npm
+  - node-express
   - certbot
   - python3
   - python3-certbot-nginx
+write_files:
+  - owner: www-data:www-data
+    path: /etc/nginx/sites-available/default
+    content: |
+      server {
+        listen 80;
+        location / {
+          proxy_pass http://localhost:3000;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection keep-alive;
+          proxy_set_header Host $host;
+	        proxy_set_header X-Real-IP $remote_addr;
+          proxy_cache_bypass $http_upgrade;
+        }
+      }
+  - owner: master:master
+    path: /home/master/myapp/index.js
+    content: |
+      var express = require('express')
+      var app = express()
+      var os = require('os');
+      app.get('/', function (req, res) {
+        res.send('Hello ' + req.headers['x-real-ip'] + ' from host ' + os.hostname() + '!')
+      })
+      app.listen(3000, function () {
+        console.log('Hello world app listening on port 3000!')
+      })  
 runcmd:
   - sed /server_names_hash_bucket_size/s/64/128/g /etc/nginx/nginx.conf -i
   - sed /server_names_hash_bucket_size/s/\#//g /etc/nginx/nginx.conf -i
   - nginx -s reload
   - certbot --nginx -d $(curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-02-01&format=text" | base64 -d) --register-unsafely-without-email --agree-tos --no-redirect
+  - nodejs /home/master/myapp/index.js
