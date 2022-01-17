@@ -11,7 +11,8 @@ write_files:
     path: /etc/nginx/sites-available/default
     content: |
       server {
-        listen 80;
+        listen 80 default_server;
+        server_name _;
         location / {
           proxy_pass http://localhost:3000;
           proxy_http_version 1.1;
