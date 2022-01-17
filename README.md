@@ -134,13 +134,14 @@ The following output variables are exposed from terraform at the end of the depl
 |VM-Webserver-SEA | IP-Address of Webserver SEA
 |Virtual_Machine-SEA | IP-Address of Client-VM in SEA
 |Virtual_Machine-USC | IP-Address of Client-VM in USC
-|Virtual_Machine-USC-PW | Password for all Virtual Machines
 |Virtual_Machine-WEU | IP-Address of Client-VM in WEU
 |Webserver_SEA | FQDN of webserver in SEA
 |Webserver_USC | FQDN of webserver in USC
 |Webserver_WEU | FQDN of webserver in WEU
 |azurerm_storage_account_web_endpoint | "https://seae21ef0a54b2bf70e.z23.web.core.windows.net/"
 |azurerm_storage_account_web_host | "seae21ef0a54b2bf70e.z23.web.core.windows.net"
+|Virtual_Machine-Username | Username for all Virtual Machines
+|Virtual_Machine-Password | Password for all Virtual Machines
 
 
 * I've decided to put the VM password in the console output, in a lab, this is quite convenient. Please keep in mind to NOT DO THIS IN PRODUCTION ! Also, since Terraform 0.15, these output will be omitted as insecure, but I decided to use the nonsensitive()-function to override the warning.
