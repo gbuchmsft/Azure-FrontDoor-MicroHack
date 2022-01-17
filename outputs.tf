@@ -26,15 +26,9 @@ output "VM-Webserver-SEA" {
     value = azurerm_linux_virtual_machine.mh-sea-web-vm-1.public_ip_address
 }
 
-output "Virtual_Machine-USC-PW" {
-    value = nonsensitive(azurerm_key_vault_secret.vmpassword.value)
-}
-
-
 output "AzureFrontDoorNameCNAME" {
     value = azurerm_frontdoor.frontdoorstd.cname
 }
-
 
 output "AzureFrontDoorName" {
     value = azurerm_frontdoor.frontdoorstd.name
@@ -54,4 +48,12 @@ output "Webserver_WEU" {
 
 output "Webserver_USC" {
     value = azurerm_public_ip.mh-usc-web-vm1-pip.fqdn
+}
+
+output "Virtual_Machine-Username" {
+    value = var.username
+}
+
+output "Virtual_Machine-Password" {
+    value = nonsensitive(azurerm_key_vault_secret.vmpassword.value)
 }
