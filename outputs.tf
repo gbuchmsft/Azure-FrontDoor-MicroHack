@@ -62,3 +62,7 @@ output "Webserver_WEU" {
 output "Webserver_USC" {
     value = azurerm_public_ip.mh-usc-web-vm1-pip.fqdn
 }
+
+output "FrontDoor_ID" {
+    value = azurerm_frontdoor.frontdoorstd.header_frontdoor_id
+}
