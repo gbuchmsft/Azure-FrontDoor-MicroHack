@@ -275,7 +275,7 @@ resource "azurerm_linux_virtual_machine" "mh-weu-web-vm-1" {
   admin_username = var.username
   admin_password = azurerm_key_vault_secret.vmpassword.value
   # custom_data    = data.template_file.user_data.rendered
-  custom_data    = filebase64("./resources/mh-sea-web-vm-cloudinit.yaml")
+  custom_data    = filebase64("./resources/web-vm-php-cloudinit.yaml")
   user_data      = base64encode(azurerm_public_ip.mh-weu-web-vm1-pip.fqdn)
   provision_vm_agent = true
 
@@ -453,7 +453,7 @@ resource "azurerm_linux_virtual_machine" "mh-usc-web-vm-1" {
   admin_username = var.username
   admin_password = azurerm_key_vault_secret.vmpassword.value
   # custom_data    = data.template_file.user_data.rendered
-  custom_data    = filebase64("./resources/mh-sea-web-vm-cloudinit.yaml")
+  custom_data    = filebase64("./resources/web-vm-php-cloudinit.yaml")
   user_data      = base64encode(azurerm_public_ip.mh-usc-web-vm1-pip.fqdn)
   provision_vm_agent = true
 

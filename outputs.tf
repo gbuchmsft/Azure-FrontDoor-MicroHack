@@ -6,10 +6,17 @@
 #    value = azurerm_storage_account.storagesea.primary_web_endpoint
 #}
 
-output "azurerm_storage_account_web_host" {
-    value = azurerm_storage_account.storagesea.primary_web_host
+output "Storage_in_SEA" {
+    value = "https://${azurerm_storage_account.storagesea.primary_web_host}"
 }
 
+output "Storage_in_USC" {
+    value = "https://${azurerm_storage_account.storageusc.primary_web_host}"
+}
+
+output "Storage_in_WEU" {
+    value = "https://${azurerm_storage_account.storageweu.primary_web_host}"
+}
 output "Virtual_Machine-SEA" {
     value = azurerm_windows_virtual_machine.client-southeastasia-vm.public_ip_address
 }

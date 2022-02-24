@@ -303,7 +303,7 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
   <img src="resources/../resources/routing-rules-2.png"></br>
 
   And enable the caching.</br>
-  <img src="resources/../resources/Update-routing-rule-cache.png"> width=640</br>
+  <img src="resources/../resources/Update-routing-rule-cache.png" width=640></br>
   
   Save the configuration in the Azure FrontDoor Designer and wait a few minutes to let the settings synchronize.</br>
   Now run the script again and call the webserver via FrontDoor again:
