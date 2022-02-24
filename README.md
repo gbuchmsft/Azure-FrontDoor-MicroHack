@@ -20,6 +20,10 @@
 
 [Module 3 : (optional) Add your own domain](#module-3--optional-add-your-own-domain)
 
+[Module 4 : Performance between FrontDoor and direct connectivity](#module-4--performance-between-frontdoor-and-direct-connectivity)
+
+[Module 5 : Rules Engine](#module-5--rules-engine)
+
 [Closing : Clean up resources](#closing--clean-up-resources)
 
 **Work in progress / coming soon:**
@@ -226,8 +230,8 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
 - Add a CNAME record to your DNS hosting the domain that you want to add, according to the data shown in the configuration of the custom domain. If your using Azure DNS it looks similar to this:<br />
   <img src="resources/bring-your-own-domain-2-dns.png" width=430>
 
-  Notice the warning :
-  <img src="resources/bring-your-own-domain-3-rule.png" width=600>
+  Notice the warning :</br>
+  <img src="resources/bring-your-own-domain-3-rule.png" width=600></br>
   This means, that you haven't added the new domain to a routing rule. To fix this you need to either modify a routing rule to include the domain, or create a new routing rule. In the routing rule, you'll need to set/add 
   the frontends/domains.
 
@@ -284,6 +288,8 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
   We don't have a large website running in this setup, so performance improvement is hard to measure. We're calling a script that does 50 times a curl and calculates and average response time in ms.<br/>
   Please paste the following commands in your local shell. If you're running Windows, you might need to install WSL(2) before you can issue the command. Be sure to change the FQDN in the command to your FrontDoor FQDN, followed by /webserver . The reason why we're using the /webserver path, is, because I want to reach the webserver instead of the storage account.
 
+  A short note on Azure CloudShell : Of course you can use Azure CloudShell to run the commands below. But, there's a gotcha here. Since Azure CloudShell is running also in an Azure Region, it will also do the calls from the Azure Region it's located and thus, it could happen, that using FrontDoor in this specific szenario show "wrong" values.
+
   Direct connection to backend webserver:
   ```console
   for i in {1..50}; do echo -n "Run # $i :: "; curl -w 'Return Code: %{http_code}; Bytes received: %{size_download}; Response Time: %{time_total}\n' https://BACKEND-SERVER-FQDN -m 2 -o /dev/null -s; done|tee /dev/tty|awk '{ sum += $NF; n++ } END { if (n > 0) print "Average Resp time =",sum / n; }'
@@ -296,6 +302,16 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
   ```
   <img src="reources/../resources/script-frontdoor-no-cache-1.png" width=800></br>
 
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant F as Front Door
+    participant B as Backend
+    C->>+F: https://FQDN_of_FrontDoor
+    F->>+B: https://FQDN_of_Backend server
+    B-->>+F : Answer
+    F-->>+C : Answer
+```
 
 
   Next step is to enable caching on the routing rule for the webserver backend.</br>
