@@ -136,6 +136,8 @@ resource "azurerm_windows_virtual_machine" "client-southeastasia-vm" {
   computer_name  = "mh-clt-SEA-vm1"
   admin_username = var.username
   admin_password = azurerm_key_vault_secret.vmpassword.value
+  enable_automatic_updates = true
+  patch_mode = "AutomaticByOS"
   provision_vm_agent = true
 
   source_image_reference {

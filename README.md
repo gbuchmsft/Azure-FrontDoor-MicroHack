@@ -28,6 +28,8 @@
 *Module x : Azure FrontDoor Premium*  
 *Module x : Accessing FrontDoor via IPv6*  
 *Module x : Test failover of backend member*  
+*Module x : Integrate public / private certs with private link backend*
+*Module x : Test WAF in Azure FrontDoor*
 *Additional information*  
 *Adopt the environment to your needs*
 
@@ -51,6 +53,7 @@ Moving on, you'll create an Azure FrontDoor Premium and deploy a backend connect
 
 ## Environment
 Since deployment of the necessary resources takes some time, many parts of the lab enviroment are scripted and deployment can be done via terraform.
+
 
 
 ### Backends
@@ -155,7 +158,7 @@ So, it's OK to use it for this Lab, if you're going to deploy this in a producti
 ## Module 0 : Check the environment
 There are a few checks that you can use to confirm that the environment is working as expected.
 - [ ] Check connectivity to Storage Accounts using a webbrowser
-- [ ] Check direct connecivity to webservers using a webbrowser
+- [ ] Check direct connectivity to webservers using a webbrowser
 - [ ] Check connectivity to clients via RDP or Bastion
 - [ ] Check connectivity to webservers via SSH or Bastion
 
@@ -216,8 +219,8 @@ Of course you can use the Microsoft supplied name for the Azure Frontdoor which 
 That option is also available in Azure FrontDoor and good news, it's quite comfortable because you could include a managed TLS certificate (or you could use your own certificate).
 
 As mentioned, adding your custom domain name is quite easy. Simply follow these steps:
-- Click the (+) sign on "Frontends/domains"
-  <img src="resources/bring-your-own-domain-1.png" width=430> 
+- Click the (+) sign on "Frontends/domains"<br />
+  <img src="resources/bring-your-own-domain-1.png" width=430>
   <br />
 - Enter the "Custom host name" that you want to add eg. fdmicrohack.azure.HIDDEN.de
 - Add a CNAME record to your DNS hosting the domain that you want to add, according to the data shown in the configuration of the custom domain. If your using Azure DNS it looks similar to this:<br />
@@ -232,6 +235,122 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
   
   Wasn't that easy ?
 
+  ## Module 4 : Performance between FrontDoor and direct connectivity
+  Azure FrontDoor is used to optimize connectivity to your web exposed workloads.
+  In this module you're going to explore how backends are chosen, how the website performance is improved and how caching can help. 
+
+  First connect via RDP or Azure Bastion to one of the remote workstation that we created earlier.
+  
+  Open Firefox and browse to the URL : https://AzureFrontDoorNameCNAME/
+  
+  You should see a website loaded from the closest storage account (** caution : Storage accounts are not the best method for choosing the closest location ! We'll get to this later.)  
+  
+  <img src="reources/../resources/RDP-AFD-storage-account.png" width=640>
+
+  In this case, the closest storage account is in the Azure region West Europe.
+  The backend pool ("Backend-Storage") was configured to connect to the location with the lowest latency.
+
+  Next step is to take a closer look at the request that reaches the backend. To do so, we're connecting again to our Azure FrontDoor instance, but this time, we're connecting to the closest webserver instance, instead of the closest storage. As you may remember, initially we created three webserver running in different Azure regions (West Europe, Central US and South East Asia). The webserver can be reached via : https://AzureFrontDoorCNAME/webserver.
+
+  <img src="reources/../resources/RDP-AFD-webserver-AFD.png" width=640>
+
+  The output should look similar to the one above.
+  There are several variables shown, let me explain the most important ones.
+
+  | Output Variable | Description |
+  --- | ---| 
+  |HTTP Host| This is the HTTP server name. In this module it's directly available through the Internet
+  |Server Port| Shows the port you've connected to, should be 80 (HTTP) or 443 (HTTPS)
+  |Server Addr| Is the internal IP of the server (just FYI and later useful)
+  |Caller IP| This is the IP of the client that initiated the connection
+  |X-Forwarded-Host| This is showing the HTTP host header that contains the "calling" host, in this case you see the name of the FrontDoor Instance.
+  |X-Forwarded-Proto| Shows the protocol type from the called request. Again, HTTP or HTTPS, but in this case the protocol that was called against FrontDoor.
+
+  Besides the variables, let me explain what the output shows. <br/>
+  You called the website "X-Forwarded-Host" using "X-Forwarded-Proto" from "Caller IP" and reached the "HTTP Host" on "Server Port".<br/>
+
+  Make a note of the "HTTP Host" you'll need it in the next step.
+
+  Next step is to call the backend server directly and compare it to the request that we did before.
+  So go back to your VM and open the URL that you noted in the last step ("HTTP Host").  The output should look similar to this:
+
+  <img src="reources/../resources/RDP-AFD-webserver-direct.png" width=640>
+
+  What has changed ? <br />
+  As you can see, "Caller IP" has changed and "X-Forwarded-Host" and "X-Forwarded-Proto" are empty. <br/>
+  Since you called the Website directly, without FrontDoor in the middle, there's nothing in between that adds the appropriate HTTP headers and only "Caller IP" is shown.
+  
+  Now we're going to test performance improvements between FrontDoor and accessing the server directly.<br/>
+  We don't have a large website running in this setup, so performance improvement is hard to measure. We're calling a script that does 50 times a curl and calculates and average response time in ms.<br/>
+  Please paste the following commands in your local shell. If you're running Windows, you might need to install WSL(2) before you can issue the command. Be sure to change the FQDN in the command to your FrontDoor FQDN, followed by /webserver . The reason why we're using the /webserver path, is, because I want to reach the webserver instead of the storage account.
+
+  Direct connection to backend webserver:
+  ```console
+  for i in {1..50}; do echo -n "Run # $i :: "; curl -w 'Return Code: %{http_code}; Bytes received: %{size_download}; Response Time: %{time_total}\n' https://BACKEND-SERVER-FQDN -m 2 -o /dev/null -s; done|tee /dev/tty|awk '{ sum += $NF; n++ } END { if (n > 0) print "Average Resp time =",sum / n; }'
+  ```
+  <img src="reources/../resources/script-backend-1a.png" width=800></br>
+
+  Connection to backend via Azure FrontDoor:
+  ```console
+  for i in {1..50}; do echo -n "Run # $i :: "; curl -w 'Return Code: %{http_code}; Bytes received: %{size_download}; Response Time: %{time_total}\n' https://YOURFRONTDOOR-FQDN/webserver -m 2 -o /dev/null -s; done|tee /dev/tty|awk '{ sum += $NF; n++ } END { if (n > 0) print "Average Resp time =",sum / n; }'
+  ```
+  <img src="reources/../resources/script-frontdoor-no-cache-1.png" width=800></br>
+
+
+
+  Next step is to enable caching on the routing rule for the webserver backend.</br>
+  Navigate to the routing rule configuration in the Azure FrontDoor Designer and open the "Webserver-Backend-1" rule.</br>
+  <img src="resources/../resources/routing-rules-2.png"></br>
+
+  And enable the caching.</br>
+  <img src="resources/../resources/Update-routing-rule-cache.png"> width=640</br>
+  
+  Save the configuration in the Azure FrontDoor Designer and wait a few minutes to let the settings synchronize.</br>
+  Now run the script again and call the webserver via FrontDoor again:
+
+  ```console
+  for i in {1..50}; do echo -n "Run # $i :: "; curl -w 'Return Code: %{http_code}; Bytes received: %{size_download}; Response Time: %{time_total}\n' https://YOURFRONTDOOR-FQDN/webserver -m 2 -o /dev/null -s; done|tee /dev/tty|awk '{ sum += $NF; n++ } END { if (n > 0) print "Average Resp time =",sum / n; }'
+  ```
+  The result should look similar to this </br>
+  <img src="reources/../resources/script-frontdoor-cache-1.png" width=800></br>
+
+  Let's collect results in a table and compare them:
+  |Connection | Duration |
+  --- | ---| 
+  |Direct to backend | 0.303617 ms
+  |Azure FrontDoor no Cache | 0.181055 ms
+  |Azure FrontDoor with Cache | 0.146908 ms
+
+  As you can see, Azure FrontDoor with enabled Cache improves the average response time ~ 50%.
+
+  ## Module 5 : Rules Engine
+  If you want to explore Azure FrontDoor on your own, now it's your turn.
+
+  FrontDoor has a powerful rules engine to modify routing based on different conditions.
+  Learn how to redirect requests from a certain IP to a different backend.
+
+  So here's the small Challenge:</br>
+  Implement a routing rule, that will route traffic from client in South East Asia (see variable : Virtual_Machine-SEA) directly to the Backend-Webserver without specifying /webserver path.
+
+  This is what it looks like before you did the change:</br>
+  <img src="resource/../resources/routing-rule-result-before.png" width=600></br>
+
+  And after the change:</br>
+  <img src="resource/../resources/routing-rule-result-after.png" width=600></br>
+  # STOP HERE if you want to try it on your own !</br>
+
+  Otherwise, here's how you can solve the challenge.
+
+  Under your FrontDoor resource, navigate to "Rules engine configuration".
+  Create a new "Rules Engine" and add a new rule with the following settings:
+  - add a conditition which matches the IP-Address of your client VM that you're using for testing.
+  - add an action to forward the request to the "Backend-Webserver" pool </br>
+  
+  <img src="resources/../resources/Rules-engine-1.png" width=800></br>
+  To activate the rule, you need to associate it with the appropriate routing rule. Since we want to redirect traffic that was originated on root path (/), we nneed to choose "Routing-Rule-1" </br>
+  <img src="resources/routing-rule-association.png" width=400> </br>
+  If you browse now to the VM that we used before, you should see a similar output to the one shown at the beginning of the module.</br>
+
  # Closing : Clean up resources
 After finishing the Microhack, you want to clean up your subscription to save costs.
 Just go back to the console our cloudshell and issue the following command:
@@ -243,5 +362,15 @@ You might want to check that the resource group is deleted afterwards, if not, p
 
 
 # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-You're leaving the "finish line". Everything below this line is work in progress
+You're leaving the "finish line". Everything below this line is work in progress.</br>
 # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+In the next modules you're going to learn more on Azure FrontDoor Premium in combination with Private Link.
+
+While you can secure the access to your backends based on different methods, they're either
+- not "highly" secure (like using an NSG with FD IP Ranges) </br>
+or
+- based on L7, which needs additional configuration on your webserver</br>
+
+# +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+

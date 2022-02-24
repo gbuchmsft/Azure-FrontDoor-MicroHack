@@ -27,6 +27,17 @@ resource "azurerm_frontdoor" "frontdoorstd" {
     }
   }
 
+  routing_rule {
+    name               = "Webserver-Backend-1"
+    accepted_protocols = ["Https"]
+    patterns_to_match  = ["/webserver"]
+    frontend_endpoints = ["examplefrontendpoint1"]
+    forwarding_configuration {
+      forwarding_protocol = "HttpsOnly"
+      backend_pool_name   = "Backend-Webserver"
+      custom_forwarding_path = "/"
+    }
+  }
   backend_pool_load_balancing {
     name = "exampleLoadBalancingSettings1"
   }

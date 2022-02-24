@@ -30,7 +30,11 @@ write_files:
       var app = express()
       var os = require('os');
       app.get('/', function (req, res) {
-        res.send('Hello ' + req.headers['x-real-ip'] + ' from host ' + os.hostname() + '!')
+        res.write('Hello, welcome on machine ' + os.hostname() + '\n')
+        res.write('You are calling from IP ' + req.headers['x-real-ip'] + '\n')
+        res.write('And you called ' + req.headers['host'] + '\n')
+        res.write('The user agent is : ' + req.headers['user-agent'] + '\n')
+        res.end()
       })
       app.listen(3000, function () {
         console.log('Hello world app listening on port 3000!')
