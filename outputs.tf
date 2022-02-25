@@ -17,48 +17,46 @@ output "Storage_in_USC" {
 output "Storage_in_WEU" {
     value = "https://${azurerm_storage_account.storageweu.primary_web_host}"
 }
-output "Virtual_Machine-SEA" {
-    value = azurerm_windows_virtual_machine.client-southeastasia-vm.public_ip_address
-}
 
-output "Virtual_Machine-USC" {
-    value = azurerm_windows_virtual_machine.client-uscentral-vm.public_ip_address
-}
-
-output "Virtual_Machine-WEU" {
-    value = azurerm_windows_virtual_machine.client-westeurope-vm.public_ip_address
-}
-
-output "VM-Webserver-SEA" {
+output "Virtual_Machine-Webserver-SEA" {
     value = azurerm_linux_virtual_machine.mh-sea-web-vm-1.public_ip_address
 }
 
-output "Virtual_Machine-USC-PW" {
-    value = nonsensitive(azurerm_key_vault_secret.vmpassword.value)
+output "Virtual_Machine-Webserver-USC" {
+    value = azurerm_linux_virtual_machine.mh-usc-web-vm-1.public_ip_address
 }
 
+output "Virtual_Machine-Webserver-WEU" {
+    value = azurerm_linux_virtual_machine.mh-weu-web-vm-1.public_ip_address
+}
+output "Windows_Virtual_Machine-SEA" {
+    value = azurerm_windows_virtual_machine.client-southeastasia-vm.public_ip_address
+}
+
+output "Windows_Virtual_Machine-USC" {
+    value = azurerm_windows_virtual_machine.client-uscentral-vm.public_ip_address
+}
+
+output "Windows_Virtual_Machine-WEU" {
+    value = azurerm_windows_virtual_machine.client-westeurope-vm.public_ip_address
+}
+
+output "Virtual_Machine-PW" {
+    value = nonsensitive(azurerm_key_vault_secret.vmpassword.value)
+}
 
 output "AzureFrontDoorNameCNAME" {
     value = azurerm_frontdoor.frontdoorstd.cname
 }
 
+# output "AzureFrontDoorName" {
+#     value = azurerm_frontdoor.frontdoorstd.name
+# }
 
-output "AzureFrontDoorName" {
-    value = azurerm_frontdoor.frontdoorstd.name
-}
+# output "AzureVM-WEU-fqdn" {
+#     value = azurerm_public_ip.client-westeurope-pip.fqdn
+# }
 
-output "AzureVM-WEU-fqdn" {
-    value = azurerm_public_ip.client-westeurope-pip.fqdn
-}
-
-output "Webserver_SEA" {
-    value = azurerm_public_ip.mh-sea-web-vm1-pip.fqdn
-}
-
-output "Webserver_WEU" {
-    value = azurerm_public_ip.mh-weu-web-vm1-pip.fqdn
-}
-
-output "Webserver_USC" {
-    value = azurerm_public_ip.mh-usc-web-vm1-pip.fqdn
+output "Azure_FrontDoor_ID" {
+    value = azurerm_frontdoor.frontdoorstd.header_frontdoor_id
 }

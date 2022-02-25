@@ -55,7 +55,7 @@ resource "azurerm_virtual_network" "pl-backend-vnet" {
 }
 
 #######################################################################
-## Create Subnets - Spoke 1
+## Create Subnets
 #######################################################################
 
 resource "azurerm_subnet" "frontdoor-pl-backend-eastus-subnet-1" {
@@ -69,6 +69,25 @@ resource "azurerm_subnet" "frontdoor-pl-backend-eastus-subnet-2" {
   resource_group_name  = var.rg-pl-vm-backend
   virtual_network_name = azurerm_virtual_network.pl-backend-vnet.name
   address_prefixes       = ["10.34.1.128/25"]
+}
+
+#######################################################################
+## Create public-IP
+#######################################################################
+resource "azurerm_public_ip" "pl-backend-webserver-pip" {
+name                = "pl-backend-webserver-pip"
+location            = var.location-pl-backend-eastus
+resource_group_name = var.rg-pl-vm-backend
+sku = "Standard"
+allocation_method   = "Static"
+depends_on = [
+    azurerm_resource_group.frontdoor-pl-backend-eastus
+  ]
+tags = {
+    environment = "pl-backend-eastus"
+    deployment  = "terraform"
+    microhack    = "frontdoor"
+  }
 }
 
 #######################################################################
@@ -89,6 +108,7 @@ resource "azurerm_network_interface" "pl-backend-vm-1-nic" {
     name                          = "pl-backend-vm-1-ipconfig"
     subnet_id                     = azurerm_subnet.frontdoor-pl-backend-eastus-subnet-1.id
     private_ip_address_allocation = "Dynamic"
+     public_ip_address_id          = azurerm_public_ip.pl-backend-webserver-pip.id
   }
 
   tags = {
@@ -111,7 +131,7 @@ resource "azurerm_linux_virtual_machine" "pl-backend-vm-1" {
   computer_name  = "pl-backend-vm-1"
   disable_password_authentication = false
   admin_username = var.username
-  admin_password = var.password
+  admin_password      = azurerm_key_vault_secret.vmpassword.value
   # custom_data    = data.template_file.user_data.rendered
   custom_data    = filebase64("pl-backend-cloudinit.yaml")
   provision_vm_agent = true

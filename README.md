@@ -34,6 +34,7 @@
 *Module x : Test failover of backend member*  
 *Module x : Integrate public / private certs with private link backend*
 *Module x : Test WAF in Azure FrontDoor*
+*Module x : Securing your Backend*
 *Additional information*  
 *Adopt the environment to your needs*
 
@@ -135,19 +136,18 @@ The following output variables are exposed from terraform at the end of the depl
 
 | Output Variable | Description |
 --- | ---| 
-|AzureFrontDoorName | This is the name of the FrontDoor in Azure. It's a random name.
-|AzureFrontDoorNameCNAME | This is the URL of the FrontDoor.
-|AzureVM-WEU-fqdn | "cltweu-9033.westeurope.cloudapp.azure.com"
-|VM-Webserver-SEA | IP-Address of Webserver SEA
-|Virtual_Machine-SEA | IP-Address of Client-VM in SEA
-|Virtual_Machine-USC | IP-Address of Client-VM in USC
-|Virtual_Machine-USC-PW | Password for all Virtual Machines
-|Virtual_Machine-WEU | IP-Address of Client-VM in WEU
-|Webserver_SEA | FQDN of webserver in SEA
-|Webserver_USC | FQDN of webserver in USC
-|Webserver_WEU | FQDN of webserver in WEU
-|azurerm_storage_account_web_endpoint | "https://seae21ef0a54b2bf70e.z23.web.core.windows.net/"
-|azurerm_storage_account_web_host | "seae21ef0a54b2bf70e.z23.web.core.windows.net"
+|Storage_in_SEA | FQDN of the Storage Account in South East Asia
+|Storage_in_USC | FQDN of the Storage Account in US Central
+|Storage_in_WEU | FQDN of the Storage Account in West Europe
+|Virtual_Machine-Webserver-SEA | FQDN of Webserver in South East Asia
+|Virtual_Machine-Webserver-USC | FQDN of Webserver in US Central
+|Virtual_Machine-Webserver-WEU | FQDN of Webserver in West EUrope
+|Windows_Virtual_Machine-SEA | IP address of Windows Client VM in South East Asia
+|Windows_Virtual_Machine-USC | IP address of Windows Client VM in US Central
+|Windows_Virtual_Machine-WEU | IP address of Windows Client VM in West EUrope
+|Virtual_Machine-PW | Password for all VMs, stored in KeyVault
+|AzureFrontDoorNameCNAME | This is the FQDN of the FrontDoor.
+|Azure_FrontDoor_ID | This is the FrontDoor ID, needed for filtering !
 
 
 * I've decided to put the VM password in the console output, in a lab, this is quite convenient. Please keep in mind to NOT DO THIS IN PRODUCTION ! Also, since Terraform 0.15, these output will be omitted as insecure, but I decided to use the nonsensitive()-function to override the warning.
@@ -190,14 +190,14 @@ A backend pools can consist of different backends, eg. you can have a backend po
 
 Task : Add a new backend to the pool. Ensure that you're using a different type. Eg. add a webserver to the "Backend-Storage" pool.
 
-- What is the result ?
-- Is there any difference ?
-- What is if you're accessing FrontDoor from a different region ?
+:question: What is the result ?
+:question: Is there any difference ?
+:question: What is if you're accessing FrontDoor from a different region ?
 
 Each backend pool member has additional configuration options. It can be enabled/disabled (taking requests or not), you can configure a backend host header (if you host multiple sites on a single webserver) and you can set a priority (eg. lower priority (higher number) could be used to create a backend pool member that is used for backup). In addition, you can set a weight, to distribute traffic unequally to the backend pool members.
 
 Task : Test the behaviour if you change the priority or the latency.
-- What did change in the behaviour ?
+:question: What did change in the behaviour ?
 
 You should now have a basic understanding of backend pools, including members and traffic distribution.
 
@@ -208,7 +208,7 @@ FrontDoor consists of backend pools, which contain the "destinations" and what w
 The deployment created one routing rule ("Routing-Rule-1") that sends all incoming traffic to the backend pool "Backend-Storage". It also ensures that only HTTPS is forwarded.
 You can use routing rules to route traffic to different backend pools based on the URI path. Eg. send all traffic coming in on https://F.Q.D.N/images to a backend pool that just serving images.
 
-<img src="resources/routing-rules-1.png" width=400>
+<img src="resources/routing-rules-1.png" width=400></br>
 
 Task :
 - Create a new routing rule that sends all traffic, coming in on https://F.Q.D.N/webserver to the "Backend-Webserver"-pool.
@@ -218,6 +218,7 @@ Task :
 - In which deployments is this helpful ?
 
 ## Module 3 : (optional) Add your own domain
+####:exclamation: Warning : If you add your own domain, you need to delete it before you can delete the MicroHack Resources in Azure with Terraform destroy.</br>
 Of course you can use the Microsoft supplied name for the Azure Frontdoor which is NAME.azurefd.net . But mostlikely you would like to have something that adheres to your company. While you're free to use something like MYCOMPANY.azurefd.net (as long as the name is not already taken), it's still not the best option and you surely would like to use your own domain name.
 
 That option is also available in Azure FrontDoor and good news, it's quite comfortable because you could include a managed TLS certificate (or you could use your own certificate).
@@ -296,22 +297,30 @@ As mentioned, adding your custom domain name is quite easy. Simply follow these 
   ```
   <img src="reources/../resources/script-backend-1a.png" width=800></br>
 
+  ```mermaid
+  sequenceDiagram
+      participant C as Client
+      participant B as Backend
+      C->>+B: https://FQDN_of_Backend server
+      B-->>+C : Answer
+  ```
+
   Connection to backend via Azure FrontDoor:
   ```console
   for i in {1..50}; do echo -n "Run # $i :: "; curl -w 'Return Code: %{http_code}; Bytes received: %{size_download}; Response Time: %{time_total}\n' https://YOURFRONTDOOR-FQDN/webserver -m 2 -o /dev/null -s; done|tee /dev/tty|awk '{ sum += $NF; n++ } END { if (n > 0) print "Average Resp time =",sum / n; }'
   ```
   <img src="reources/../resources/script-frontdoor-no-cache-1.png" width=800></br>
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant F as Front Door
-    participant B as Backend
-    C->>+F: https://FQDN_of_FrontDoor
-    F->>+B: https://FQDN_of_Backend server
-    B-->>+F : Answer
-    F-->>+C : Answer
-```
+  ```mermaid
+  sequenceDiagram
+      participant C as Client
+      participant F as Front Door
+      participant B as Backend
+      C->>+F: https://FQDN_of_FrontDoor
+      F->>+B: https://FQDN_of_Backend server
+      B-->>+F : Answer
+      F-->>+C : Answer
+  ```
 
 
   Next step is to enable caching on the routing rule for the webserver backend.</br>
@@ -329,6 +338,18 @@ sequenceDiagram
   ```
   The result should look similar to this </br>
   <img src="reources/../resources/script-frontdoor-cache-1.png" width=800></br>
+
+````mermaid
+  sequenceDiagram
+    participant C as Client
+    participant F as Front Door
+    participant B as Backend
+    C->>+F: https://FQDN_of_FrontDoor
+    F->>+B: https://FQDN_of_Backend server
+    B-->>+F : Answer
+    note left of F : Cached Backend Data
+    F-->>+C : Answer
+````
 
   Let's collect results in a table and compare them:
   |Connection | Duration |
@@ -353,7 +374,7 @@ sequenceDiagram
 
   And after the change:</br>
   <img src="resource/../resources/routing-rule-result-after.png" width=600></br>
-  # STOP HERE if you want to try it on your own !</br>
+  # :exclamation: STOP HERE if you want to try it on your own ! :exclamation:</br>
 
   Otherwise, here's how you can solve the challenge.
 
@@ -388,5 +409,29 @@ While you can secure the access to your backends based on different methods, the
 or
 - based on L7, which needs additional configuration on your webserver</br>
 
+At the time of the creation of this MicroHack, Azure Front Door Premium was still in Preview. So it might change til final GA.
+
 # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
+We'll acces the backend via private link.
+## Create private link service
+So first step is to create a Private Link service that can be consumed from a Private Endpoint.
+<img src="resources/FD-Prem-3.png" width=1000></br>
+Choose the existing LoadBalancer for this Lab and tre
+<img src="resources/FD-Prem-4.png" width=1000></br>
+<img src="resources/FD-Prem-5.png" width=1000></br>
+<img src="resources/FD-Prem-6.png" width=1000></br>
+## Create Azure Front Door Premium
+Navigate to the Azure Portal and search for "Front Door" and choose "Front Door Standard / Premium" </br>
+<img src="resources/FD-Prem-1.png" width=640></br>
+Now, choose the Azure Front Door option and "quick create".
+<img src="resources/FD-Prem-2.png" width=640></br>
+Next step is to create the front door profile.
+<img src="resources/FD-Prem-10.png" width=640></br>
+Be sure to enable private link in the front door profile.
+<img src="resources/FD-Prem-11.png" width=640></br>
+In the Azure Portal, navigate to the private link services and
+approve the private link request to allow creation of a private endpoint for Azure Front Door.</br>
+<img src="resources/FD-Prem-13.png" width=640></br>
+Final step is to update the route, so that the route matches the backend pool. In this case, the webserver doesn't support TLS, so choose HTTP as backend method.
+<img src="resources/FD-Prem-12.png" width=640></br>
