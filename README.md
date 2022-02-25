@@ -190,14 +190,14 @@ A backend pools can consist of different backends, eg. you can have a backend po
 
 Task : Add a new backend to the pool. Ensure that you're using a different type. Eg. add a webserver to the "Backend-Storage" pool.
 
-:question: What is the result ?
-:question: Is there any difference ?
-:question: What is if you're accessing FrontDoor from a different region ?
+:question: What is the result ?</br>
+:question: Is there any difference ?</br>
+:question: What is if you're accessing FrontDoor from a different region ?</br>
 
 Each backend pool member has additional configuration options. It can be enabled/disabled (taking requests or not), you can configure a backend host header (if you host multiple sites on a single webserver) and you can set a priority (eg. lower priority (higher number) could be used to create a backend pool member that is used for backup). In addition, you can set a weight, to distribute traffic unequally to the backend pool members.
 
 Task : Test the behaviour if you change the priority or the latency.
-:question: What did change in the behaviour ?
+:question: What did change in the behaviour ?</br>
 
 You should now have a basic understanding of backend pools, including members and traffic distribution.
 
