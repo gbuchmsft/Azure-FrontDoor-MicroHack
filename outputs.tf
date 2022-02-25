@@ -57,6 +57,10 @@ output "AzureFrontDoorNameCNAME" {
 #     value = azurerm_public_ip.client-westeurope-pip.fqdn
 # }
 
-output "Azure_FrontDoor_ID" {
+output "Webserver_USC" {
+    value = azurerm_public_ip.mh-usc-web-vm1-pip.fqdn
+}
+
+output "FrontDoor_ID" {
     value = azurerm_frontdoor.frontdoorstd.header_frontdoor_id
 }
